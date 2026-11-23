@@ -8,8 +8,11 @@
   );
 
   const FRAMES = {
-    portrait: { src: "assets/frame-portrait.png", label: "Potret" },
-    landscape: { src: "assets/frame-landscape.png", label: "Landskap" },
+    // win = the see-through window of the frame (in frame pixels, with a small
+    // margin hidden under the border). The photo is fitted into this window
+    // only, so nothing is wasted behind the border.
+    portrait: { src: "assets/frame-portrait.png", label: "Potret", size: [960, 1637], win: [47, 574, 936, 1408] },
+    landscape: { src: "assets/frame-landscape.png", label: "Landskap", size: [1672, 941], win: [85, 168, 1584, 869] },
   };
   const OUTPUT_LONG_SIDE = 1920;
 
@@ -68,6 +71,18 @@
     if (h > availH) { h = availH; w = h * ratio; }
     els.stage.style.width = Math.floor(w) + "px";
     els.stage.style.height = Math.floor(h) + "px";
+    placeVideo();
+  }
+
+  // Put the live video exactly where the photo will go in the final picture.
+  function placeVideo() {
+    const f = FRAMES[state.frame];
+    const [fw, fh] = f.size, [x1, y1, x2, y2] = f.win;
+    const v = els.video.style;
+    v.left = (x1 / fw * 100) + "%";
+    v.top = (y1 / fh * 100) + "%";
+    v.width = ((x2 - x1) / fw * 100) + "%";
+    v.height = ((y2 - y1) / fh * 100) + "%";
   }
   window.addEventListener("resize", () => { if ($("camera").classList.contains("active")) fitStage(); });
 
@@ -85,9 +100,10 @@
       els.camError.classList.remove("hidden");
       return;
     }
-    const portrait = state.frame === "portrait";
+    // Ask for the camera's natural 4:3 picture. Asking for a tall/forced shape
+    // makes many phones crop the sensor, which looks zoomed in.
     const tries = [
-      { video: { facingMode: { ideal: state.facing }, width: { ideal: portrait ? 1080 : 1920 }, height: { ideal: portrait ? 1920 : 1080 } }, audio: false },
+      { video: { facingMode: { ideal: state.facing }, width: { ideal: 1920 }, height: { ideal: 1440 } }, audio: false },
       { video: { facingMode: state.facing }, audio: false },
       { video: true, audio: false },
     ];
@@ -123,14 +139,18 @@
     c.width = W; c.height = H;
     const ctx = c.getContext("2d");
     ctx.imageSmoothingQuality = "high";
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = "#0b2a94";
     ctx.fillRect(0, 0, W, H);
 
-    // cover-fit the photo
-    const s = Math.max(W / srcW, H / srcH);
+    // Fit the photo into the frame's window only (same as the live preview)
+    const [fx1, fy1, fx2, fy2] = FRAMES[state.frame].win;
+    const k = W / FRAMES[state.frame].size[0];
+    const bx = fx1 * k, by = fy1 * k, bw = (fx2 - fx1) * k, bh = (fy2 - fy1) * k;
+    const s = Math.max(bw / srcW, bh / srcH);
     const dw = srcW * s, dh = srcH * s;
-    const dx = (W - dw) / 2, dy = (H - dh) / 2;
+    const dx = bx + (bw - dw) / 2, dy = by + (bh - dh) / 2;
     ctx.save();
+    ctx.beginPath(); ctx.rect(bx, by, bw, bh); ctx.clip();
     if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
     ctx.drawImage(source, mirror ? W - dx - dw : dx, dy, dw, dh);
     ctx.restore();
