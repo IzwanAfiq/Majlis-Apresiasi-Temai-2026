@@ -4,7 +4,7 @@
 window.APP_CONFIG = {
   // URL Web App Google Apps Script (lihat README.md, langkah 1).
   // Contoh: "https://script.google.com/macros/s/AKfycb.../exec"
-  UPLOAD_URL: "",
+  UPLOAD_URL: "https://script.google.com/macros/s/AKfycbz_w-eItxd5WWUBsYEoduRT2jW1y9FnxTdulJr4ik9nZTHN2sEZ1btDC7ZJXlqBztcg/exec",
 
   // Awalan nama fail gambar yang disimpan dalam Google Drive
   FILE_PREFIX: "SKTemai2026",
