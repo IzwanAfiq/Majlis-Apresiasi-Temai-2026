@@ -39,6 +39,7 @@
     lastUrl: null,
     lastName: "",
     frameImgs: {},
+    theme: "purple",
     zoom: 1, // 0 = show the whole camera picture, 1 = fill the window (default)
   };
 
@@ -53,13 +54,21 @@
   }
 
   // ---------- Frames preload ----------
-  for (const [key, f] of Object.entries(FRAMES)) {
-    const img = new Image();
-    img.src = f.src;
-    state.frameImgs[key] = img;
+  // Colour themes: each has its own pair of frames (same shape, so same window).
+  const THEMES = {
+    blue: { suffix: "", fill: "#0b2a94", color: "#0b2a94" },
+    purple: { suffix: "-purple", fill: "#5a1fa8", color: "#5a1fa8" },
+  };
+  const frameSrc = (orient, theme = state.theme) => `assets/frame-${orient}${THEMES[theme].suffix}.png`;
+  for (const theme of Object.keys(THEMES)) {
+    for (const orient of Object.keys(FRAMES)) {
+      const img = new Image();
+      img.src = frameSrc(orient, theme);
+      state.frameImgs[theme + "-" + orient] = img;
+    }
   }
-  const frameReady = (key) => {
-    const img = state.frameImgs[key];
+  const frameReady = (orient) => {
+    const img = state.frameImgs[state.theme + "-" + orient];
     return img.complete && img.naturalWidth
       ? Promise.resolve(img)
       : new Promise((res, rej) => { img.onload = () => res(img); img.onerror = rej; });
@@ -147,7 +156,7 @@
 
   async function openCamera(frame) {
     state.frame = frame;
-    els.overlay.src = FRAMES[frame].src;
+    els.overlay.src = frameSrc(frame);
     els.camTitle.textContent = "Bingkai " + FRAMES[frame].label;
     show("camera");
     await startCamera();
@@ -163,7 +172,7 @@
     c.width = W; c.height = H;
     const ctx = c.getContext("2d");
     ctx.imageSmoothingQuality = "high";
-    ctx.fillStyle = "#0b2a94";
+    ctx.fillStyle = THEMES[state.theme].fill;
     ctx.fillRect(0, 0, W, H);
 
     // Fit the photo into the frame's window only (same as the live preview)
@@ -198,7 +207,7 @@
     const p = (n) => String(n).padStart(2, "0");
     const stamp = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
     const rand = Math.random().toString(36).slice(2, 6);
-    return `${CFG.FILE_PREFIX}_${state.frame}_${stamp}_${rand}.jpg`;
+    return `${CFG.FILE_PREFIX}_${state.theme}_${state.frame}_${stamp}_${rand}.jpg`;
   }
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -422,7 +431,7 @@
   els.flip.addEventListener("click", () => { state.facing = state.facing === "user" ? "environment" : "user"; startCamera(); });
   els.switchFrame.addEventListener("click", () => {
     state.frame = state.frame === "portrait" ? "landscape" : "portrait";
-    els.overlay.src = FRAMES[state.frame].src;
+    els.overlay.src = frameSrc(state.frame);
     els.camTitle.textContent = "Bingkai " + FRAMES[state.frame].label;
     fitStage();
     startCamera();
@@ -444,6 +453,22 @@
   document.addEventListener("keydown", (e) => {
     if ((e.code === "Space" || e.code === "Enter") && $("camera").classList.contains("active")) { e.preventDefault(); capture(); }
   });
+
+  // ---------- Colour theme picker ----------
+  function setTheme(theme) {
+    if (!THEMES[theme]) theme = "purple";
+    state.theme = theme;
+    document.body.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", THEMES[theme].color);
+    document.querySelectorAll(".theme-btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.theme === theme)));
+    document.querySelectorAll(".pick").forEach((b) => { b.querySelector("img").src = frameSrc(b.dataset.frame); });
+    $("homeBanner").src = frameSrc("landscape");
+    try { localStorage.setItem("theme", theme); } catch (e) { /* private mode */ }
+  }
+  document.querySelectorAll(".theme-btn").forEach((b) => b.addEventListener("click", () => setTheme(b.dataset.theme)));
+  let savedTheme = null;
+  try { savedTheme = localStorage.getItem("theme"); } catch (e) { /* ignore */ }
+  setTheme(savedTheme || "purple");
 
   updateQueueInfo();
   flushQueue();

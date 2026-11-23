@@ -12,6 +12,14 @@
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
 
+body[data-theme="purple"] {
+  --blue-900: #2a0b5e;
+  --blue-700: #5a1fa8;
+  --blue-500: #a855f7;
+  --cyan: #f0abfc;
+  --muted: #ecdcff;
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; }
 body {
@@ -50,6 +58,16 @@ h1 {
 .sub { margin: 0 0 22px; color: var(--muted); line-height: 1.4; }
 .label { margin: 0 0 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; font-size: .8rem; color: var(--cyan); }
 
+.theme-pick { display: flex; gap: 10px; justify-content: center; margin: 0 0 22px; }
+.theme-btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px;
+  border-radius: 999px; border: 2px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08);
+  font-weight: 700;
+}
+.theme-btn[aria-pressed="true"] { border-color: var(--gold); background: rgba(255,201,40,.18); }
+.dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #fff; }
+.dot-purple { background: #9b4dea; }
+.dot-blue { background: #1d4fe0; }
 .frame-pick { display: grid; grid-template-columns: 0.75fr 1.25fr; gap: 14px; align-items: end; }
 .pick {
   background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.2);
@@ -87,7 +105,7 @@ h1 {
 /* ---------- CAMERA ---------- */
 .stage-wrap { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0 12px; }
 .stage {
-  position: relative; overflow: hidden; background: #0b2a94;
+  position: relative; overflow: hidden; background: var(--blue-700);
   border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
   /* width/height set by JS to fit aspect */
 }
@@ -112,7 +130,7 @@ h1 {
 @keyframes flash { 0% { opacity: .95; } 100% { opacity: 0; } }
 .cam-error {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 24px; text-align: center; background: rgba(7,26,99,.85);
+  padding: 24px; text-align: center; background: rgba(7,26,99,.85); background: color-mix(in srgb, var(--blue-900) 85%, transparent);
 }
 .cam-error .small { font-size: .9rem; color: var(--muted); }
 

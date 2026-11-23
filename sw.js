@@ -1,5 +1,5 @@
 // Service worker: makes the app installable and usable offline.
-const CACHE = "sktemai2026-v5";
+const CACHE = "sktemai2026-v6";
 const ASSETS = [
   "./",
   "index.html",
@@ -9,6 +9,8 @@ const ASSETS = [
   "manifest.webmanifest",
   "assets/frame-portrait.png",
   "assets/frame-landscape.png",
+  "assets/frame-portrait-purple.png",
+  "assets/frame-landscape-purple.png",
   "assets/icons/icon-192.png",
   "assets/icons/icon-512.png",
   "assets/icons/icon-maskable-512.png",

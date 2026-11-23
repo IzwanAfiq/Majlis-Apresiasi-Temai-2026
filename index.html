@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Photobooth SK Temai 2026</title>
   <meta name="description" content="Photobooth Majlis Apresiasi Pendidikan dan Graduasi SK Temai 2026">
-  <meta name="theme-color" content="#0b2a94">
+  <meta name="theme-color" content="#5a1fa8">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
@@ -15,21 +15,27 @@
   <meta name="apple-mobile-web-app-title" content="SK Temai 2026">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-theme="purple">
   <!-- ================= SKRIN UTAMA ================= -->
   <section id="home" class="screen active">
     <div class="home-inner">
-      <img class="home-banner" src="assets/frame-landscape.png" alt="Majlis Apresiasi Pendidikan dan Graduasi SK Temai 2026">
+      <img id="homeBanner" class="home-banner" src="assets/frame-landscape-purple.png" alt="Majlis Apresiasi Pendidikan dan Graduasi SK Temai 2026">
       <h1>Photobooth</h1>
       <p class="sub">Majlis Apresiasi Pendidikan &amp; Graduasi<br>SK Temai 2026</p>
+
+      <p class="label">Pilih warna</p>
+      <div class="theme-pick" role="group" aria-label="Pilih warna bingkai">
+        <button class="theme-btn" data-theme="purple" aria-pressed="true"><span class="dot dot-purple"></span>Ungu</button>
+        <button class="theme-btn" data-theme="blue" aria-pressed="false"><span class="dot dot-blue"></span>Biru</button>
+      </div>
 
       <p class="label">Pilih bingkai</p>
       <div class="frame-pick">
         <button class="pick" data-frame="portrait" aria-label="Bingkai Potret">
-          <img src="assets/frame-portrait.png" alt=""><span>Potret</span>
+          <img src="assets/frame-portrait-purple.png" alt=""><span>Potret</span>
         </button>
         <button class="pick" data-frame="landscape" aria-label="Bingkai Landskap">
-          <img src="assets/frame-landscape.png" alt=""><span>Landskap</span>
+          <img src="assets/frame-landscape-purple.png" alt=""><span>Landskap</span>
         </button>
       </div>
 
