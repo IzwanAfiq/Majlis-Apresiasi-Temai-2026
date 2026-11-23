@@ -1,5 +1,5 @@
 // Service worker: makes the app installable and usable offline.
-const CACHE = "sktemai2026-v3";
+const CACHE = "sktemai2026-v4";
 const ASSETS = [
   "./",
   "index.html",

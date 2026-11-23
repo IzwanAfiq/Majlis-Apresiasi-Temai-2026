@@ -19,7 +19,8 @@
   const $ = (id) => document.getElementById(id);
   const els = {
     screens: document.querySelectorAll(".screen"),
-    video: $("video"), overlay: $("overlay"), stage: $("stage"),
+    video: $("video"), videoBg: $("videoBg"), win: $("win"), zoom: $("zoom"), overlay: $("overlay"), stage: $("stage"),
+    iosSaveHint: $("iosSaveHint"),
     countdown: $("countdown"), flash: $("flash"), camError: $("camError"),
     shutter: $("shutterBtn"), flip: $("flipBtn"), fileInput: $("fileInput"),
     back: $("backBtn"), switchFrame: $("switchFrameBtn"), camTitle: $("camTitle"),
@@ -38,7 +39,18 @@
     lastUrl: null,
     lastName: "",
     frameImgs: {},
+    zoom: 0, // 0 = show the whole camera picture, 1 = fill the window
   };
+
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  // Where the photo goes inside a box: zoom 0 = whole picture fits, 1 = fills box.
+  function placeIn(bw, bh, srcW, srcH, zoom) {
+    const fit = Math.min(bw / srcW, bh / srcH), fill = Math.max(bw / srcW, bh / srcH);
+    const s = fit + (fill - fit) * zoom;
+    const dw = srcW * s, dh = srcH * s;
+    return { x: (bw - dw) / 2, y: (bh - dh) / 2, w: dw, h: dh };
+  }
 
   // ---------- Frames preload ----------
   for (const [key, f] of Object.entries(FRAMES)) {
@@ -78,11 +90,19 @@
   function placeVideo() {
     const f = FRAMES[state.frame];
     const [fw, fh] = f.size, [x1, y1, x2, y2] = f.win;
-    const v = els.video.style;
-    v.left = (x1 / fw * 100) + "%";
-    v.top = (y1 / fh * 100) + "%";
-    v.width = ((x2 - x1) / fw * 100) + "%";
-    v.height = ((y2 - y1) / fh * 100) + "%";
+    const w = els.win.style;
+    w.left = (x1 / fw * 100) + "%";
+    w.top = (y1 / fh * 100) + "%";
+    w.width = ((x2 - x1) / fw * 100) + "%";
+    w.height = ((y2 - y1) / fh * 100) + "%";
+    layoutVideo();
+  }
+
+  function layoutVideo() {
+    const v = els.video;
+    if (!v.videoWidth) return;
+    const r = placeIn(els.win.clientWidth, els.win.clientHeight, v.videoWidth, v.videoHeight, state.zoom);
+    Object.assign(v.style, { left: r.x + "px", top: r.y + "px", width: r.w + "px", height: r.h + "px" });
   }
   window.addEventListener("resize", () => { if ($("camera").classList.contains("active")) fitStage(); });
 
@@ -91,6 +111,7 @@
     if (state.stream) state.stream.getTracks().forEach((t) => t.stop());
     state.stream = null;
     els.video.srcObject = null;
+    els.videoBg.srcObject = null;
   }
 
   async function startCamera() {
@@ -115,10 +136,13 @@
     }
     if (!state.stream) { els.camError.classList.remove("hidden"); return; }
     els.video.srcObject = state.stream;
+    els.videoBg.srcObject = state.stream;
     const settings = state.stream.getVideoTracks()[0].getSettings ? state.stream.getVideoTracks()[0].getSettings() : {};
     const isFront = settings.facingMode ? settings.facingMode === "user" : state.facing === "user";
     els.video.classList.toggle("mirror", isFront);
-    try { await els.video.play(); } catch (e) { /* autoplay handled by attributes */ }
+    els.videoBg.classList.toggle("mirror", isFront);
+    try { await els.video.play(); els.videoBg.play().catch(() => {}); } catch (e) { /* autoplay handled by attributes */ }
+    layoutVideo();
   }
 
   async function openCamera(frame) {
@@ -146,13 +170,23 @@
     const [fx1, fy1, fx2, fy2] = FRAMES[state.frame].win;
     const k = W / FRAMES[state.frame].size[0];
     const bx = fx1 * k, by = fy1 * k, bw = (fx2 - fx1) * k, bh = (fy2 - fy1) * k;
-    const s = Math.max(bw / srcW, bh / srcH);
-    const dw = srcW * s, dh = srcH * s;
-    const dx = bx + (bw - dw) / 2, dy = by + (bh - dh) / 2;
+    const r = placeIn(bw, bh, srcW, srcH, state.zoom);
+    const dx = bx + r.x, dy = by + r.y, dw = r.w, dh = r.h;
     ctx.save();
     ctx.beginPath(); ctx.rect(bx, by, bw, bh); ctx.clip();
     if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
-    ctx.drawImage(source, mirror ? W - dx - dw : dx, dy, dw, dh);
+    const X = (x, w) => (mirror ? W - x - w : x);
+    // blurred fill for any empty space (shrink then enlarge = blur, works on every browser)
+    if (dw < bw - 1 || dh < bh - 1) {
+      const c = placeIn(bw, bh, srcW, srcH, 1);
+      const tiny = document.createElement("canvas");
+      tiny.width = 48; tiny.height = Math.max(1, Math.round(48 * srcH / srcW));
+      tiny.getContext("2d").drawImage(source, 0, 0, tiny.width, tiny.height);
+      ctx.filter = "brightness(0.75)";
+      ctx.drawImage(tiny, X(bx + c.x, c.w), by + c.y, c.w, c.h);
+      ctx.filter = "none";
+    }
+    ctx.drawImage(source, X(dx, dw), dy, dw, dh);
     ctx.restore();
 
     ctx.drawImage(frame, 0, 0, W, H);
@@ -220,13 +254,22 @@
     els.resultImg.src = state.lastUrl;
 
     const canShare = !!(navigator.canShare && navigator.canShare({ files: [new File([blob], state.lastName, { type: "image/jpeg" })] }));
+    state.canShare = canShare;
     els.share.classList.toggle("hidden", !canShare);
+    if (isIOS && canShare) {
+      els.download.textContent = "📥 Simpan ke Foto";
+      els.share.classList.add("hidden"); // same action, avoid two buttons
+    }
+    els.iosSaveHint.classList.toggle("hidden", !isIOS);
     show("result");
     queueUpload(blob, state.lastName);
   }
 
   function download() {
     if (!state.lastUrl) return;
+    // iPhone/iPad: a download goes to the Files app. The share sheet's
+    // "Save Image" is the only way to put it in the Photos album.
+    if (isIOS && state.canShare) return share();
     const a = document.createElement("a");
     a.href = state.lastUrl;
     a.download = state.lastName;
@@ -366,7 +409,6 @@
   });
   window.addEventListener("appinstalled", () => els.installBtn.classList.add("hidden"));
 
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
   if (isIOS && !standalone) els.iosHint.classList.remove("hidden");
 
@@ -386,6 +428,9 @@
     startCamera();
   });
   els.back.addEventListener("click", () => { stopCamera(); show("home"); updateQueueInfo(); });
+  els.zoom.addEventListener("input", () => { state.zoom = els.zoom.value / 100; layoutVideo(); });
+  els.video.addEventListener("loadedmetadata", layoutVideo);
+  els.video.addEventListener("resize", layoutVideo);
   els.fileInput.addEventListener("change", (e) => fromFile(e.target.files[0]));
   els.download.addEventListener("click", download);
   els.share.addEventListener("click", share);

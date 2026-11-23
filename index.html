@@ -49,7 +49,10 @@
 
     <div class="stage-wrap">
       <div id="stage" class="stage">
-        <video id="video" playsinline autoplay muted></video>
+        <div id="win" class="win">
+          <video id="videoBg" class="video-bg" playsinline autoplay muted></video>
+          <video id="video" playsinline autoplay muted></video>
+        </div>
         <img id="overlay" class="overlay" alt="">
         <div id="countdown" class="countdown hidden">3</div>
         <div id="flash" class="flash"></div>
@@ -58,6 +61,12 @@
           <p class="small">Benarkan akses kamera dalam tetapan pelayar, atau guna butang <b>Galeri</b> di bawah.</p>
         </div>
       </div>
+    </div>
+
+    <div class="zoom-row">
+      <span aria-hidden="true">🔍−</span>
+      <input id="zoom" type="range" min="0" max="100" value="0" aria-label="Zum">
+      <span aria-hidden="true">🔍+</span>
     </div>
 
     <div class="controls">
@@ -84,6 +93,7 @@
     </div>
     <div class="side">
     <div id="uploadStatus" class="status">Menyimpan ke Google Drive…</div>
+    <p id="iosSaveHint" class="hint save-hint hidden">📱 Tekan <b>Simpan ke Foto</b>, kemudian pilih <b>“Save Image / Simpan Imej”</b>.<br>Atau tekan lama pada gambar → <b>“Save to Photos”</b>.</p>
     <div class="actions">
       <button id="downloadBtn" class="btn primary">⬇️ Muat Turun</button>
       <button id="shareBtn" class="btn hidden">📤 Kongsi</button>
