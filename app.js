@@ -39,7 +39,7 @@
     lastUrl: null,
     lastName: "",
     frameImgs: {},
-    zoom: 0, // 0 = show the whole camera picture, 1 = fill the window
+    zoom: 1, // 0 = show the whole camera picture, 1 = fill the window (default)
   };
 
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -428,6 +428,7 @@
     startCamera();
   });
   els.back.addEventListener("click", () => { stopCamera(); show("home"); updateQueueInfo(); });
+  els.zoom.value = state.zoom * 100; // browsers may restore an old slider value
   els.zoom.addEventListener("input", () => { state.zoom = els.zoom.value / 100; layoutVideo(); });
   els.video.addEventListener("loadedmetadata", layoutVideo);
   els.video.addEventListener("resize", layoutVideo);
