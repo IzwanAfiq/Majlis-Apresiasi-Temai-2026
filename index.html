@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Photobooth SK Temai 2026</title>
+  <meta name="description" content="Photobooth Majlis Apresiasi Pendidikan dan Graduasi SK Temai 2026">
+  <meta name="theme-color" content="#0b2a94">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SK Temai 2026">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ================= SKRIN UTAMA ================= -->
+  <section id="home" class="screen active">
+    <div class="home-inner">
+      <img class="home-banner" src="assets/frame-landscape.png" alt="Majlis Apresiasi Pendidikan dan Graduasi SK Temai 2026">
+      <h1>Photobooth</h1>
+      <p class="sub">Majlis Apresiasi Pendidikan &amp; Graduasi<br>SK Temai 2026</p>
+
+      <p class="label">Pilih bingkai</p>
+      <div class="frame-pick">
+        <button class="pick" data-frame="portrait" aria-label="Bingkai Potret">
+          <img src="assets/frame-portrait.png" alt=""><span>Potret</span>
+        </button>
+        <button class="pick" data-frame="landscape" aria-label="Bingkai Landskap">
+          <img src="assets/frame-landscape.png" alt=""><span>Landskap</span>
+        </button>
+      </div>
+
+      <button id="installBtn" class="btn ghost hidden">⬇️ Pasang Aplikasi</button>
+      <p id="iosHint" class="hint hidden">iPhone/iPad: tekan <b>Kongsi</b> <span class="ios-share">⎋</span> kemudian <b>“Add to Home Screen”</b> untuk pasang aplikasi.</p>
+      <p id="queueInfo" class="hint hidden"></p>
+    </div>
+  </section>
+
+  <!-- ================= SKRIN KAMERA ================= -->
+  <section id="camera" class="screen">
+    <div class="topbar">
+      <button id="backBtn" class="icon-btn" aria-label="Kembali">←</button>
+      <span id="camTitle">Kamera</span>
+      <button id="switchFrameBtn" class="icon-btn" aria-label="Tukar bingkai">⇄</button>
+    </div>
+
+    <div class="stage-wrap">
+      <div id="stage" class="stage">
+        <video id="video" playsinline autoplay muted></video>
+        <img id="overlay" class="overlay" alt="">
+        <div id="countdown" class="countdown hidden">3</div>
+        <div id="flash" class="flash"></div>
+        <div id="camError" class="cam-error hidden">
+          <p>Kamera tidak dapat dibuka.</p>
+          <p class="small">Benarkan akses kamera dalam tetapan pelayar, atau guna butang <b>Galeri</b> di bawah.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <label class="ctrl" aria-label="Pilih gambar dari galeri">
+        <input id="fileInput" type="file" accept="image/*" hidden>
+        <span class="ctrl-ico">🖼️</span><span>Galeri</span>
+      </label>
+      <button id="shutterBtn" class="shutter" aria-label="Ambil gambar"><span></span></button>
+      <button id="flipBtn" class="ctrl" aria-label="Tukar kamera">
+        <span class="ctrl-ico">🔄</span><span>Tukar</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= SKRIN HASIL ================= -->
+  <section id="result" class="screen">
+    <div class="topbar">
+      <button id="retakeTop" class="icon-btn" aria-label="Ambil semula">←</button>
+      <span>Gambar Anda</span>
+      <span class="icon-btn-spacer"></span>
+    </div>
+    <div class="result-wrap">
+      <img id="resultImg" alt="Gambar dengan bingkai">
+    </div>
+    <div class="side">
+    <div id="uploadStatus" class="status">Menyimpan ke Google Drive…</div>
+    <div class="actions">
+      <button id="downloadBtn" class="btn primary">⬇️ Muat Turun</button>
+      <button id="shareBtn" class="btn hidden">📤 Kongsi</button>
+      <button id="retakeBtn" class="btn ghost">📸 Ambil Semula</button>
+    </div>
+    </div>
+  </section>
+
+  <canvas id="canvas" hidden></canvas>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
